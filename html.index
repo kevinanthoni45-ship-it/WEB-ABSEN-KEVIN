@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Digital IPM GEN 14 SMK Muhammadiyah Lumajang</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .pulse-green {
+            animation: pulseGreen 2s infinite;
+        }
+        @keyframes pulseGreen {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+        }
+    </style>
+</head>
+<body class="h-full bg-gradient-to-br from-green-50 to-blue-50">
+    <div class="min-h-full">
+        <!-- Header -->
+        <header class="bg-white shadow-lg border-b-4 border-green-500">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="text-center">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">📚 Absensi Digital IPM GEN 14</h1>
+                    <p class="text-lg text-gray-600">SMK Muhammadiyah Lumajang</p>
+                    <div class="mt-4 bg-green-100 rounded-lg p-3 inline-block">
+                        <p class="text-sm font-medium text-green-800" id="currentTime"></p>
+                        <p class="text-xs text-green-600">Tepat Waktu: 05:00-06:05 | Terlambat: 06:06-06:30</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Tab Navigation -->
+            <div class="mb-8">
+                <nav class="flex space-x-1 bg-white rounded-lg p-1 shadow-md">
+                    <button onclick="showTab('absen')" id="tab-absen" class="flex-1 py-3 px-4 text-sm font-medium rounded-md bg-green-500 text-white transition-all">
+                        ✅ Absen Sekarang
+                    </button>
+                    <button onclick="showTab('rekap')" id="tab-rekap" class="flex-1 py-3 px-4 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all">
+                        📊 Rekap Harian
+                    </button>
+                    <button onclick="showTab('terlambat')" id="tab-terlambat" class="flex-1 py-3 px-4 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all">
+                        ⏰ Daftar Terlambat
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="content-absen" class="tab-content">
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Pilih Nama Anda untuk Absen</h2>
+                    
+                    <!-- Search Box -->
+                    <div class="mb-6">
+                        <input type="text" id="searchInput" placeholder="🔍 Cari nama anggota..." 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg">
+                    </div>
+
+                    <!-- Member List -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="memberList">
+                        <!-- Members will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-rekap" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">📊 Rekap Kehadiran Hari Ini</h2>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-600" id="rekapDate"></p>
+                            <div class="flex space-x-4 mt-2">
+                                <span class="text-green-600 font-semibold">Hadir: <span id="hadirCount">0</span></span>
+                                <span class="text-yellow-600 font-semibold">Terlambat: <span id="terlambatCount">0</span></span>
+                                <span class="text-red-600 font-semibold">Tidak Hadir: <span id="tidakHadirCount">40</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu Absen</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="rekapTable">
+                                <!-- Rekap data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-terlambat" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">⏰ Daftar Anggota Terlambat</h2>
+                    <div id="terlambatList" class="space-y-4">
+                        <!-- Late members will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-8 max-w-md mx-4 text-center fade-in">
+            <div class="text-6xl mb-4">✅</div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">Absen Berhasil!</h3>
+            <p class="text-gray-600 mb-4" id="successMessage"></p>
+            <button onclick="closeModal()" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                Tutup
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Member data
+        const members = [
+            "Alfian kuswidihanto", "Althafunnisa Fathia", "Alyne Nazwatul Hasanah", 
+            "Asyifa Aliefita Ramadhani Maknaningrum", "Calysta Akifa Khansa", 
+            "Chica maulidia febriani", "Devina widiya nur zaskia", "Erdanaisya bintania SPrasety",
+            "Farah nadia syakilla", "Gemilang Dimmy Prasetyo", "Hafizah sintya bella",
+            "Hafsha Naura Rafi", "Hidayatun nisa", "Imelda Rina Yulia Putri",
+            "Kayyisa Athalia Alif Prasetyo", "Kevin anthoni", "Marica Dini M",
+            "Meisya putri pratiwi", "Muhammad Bayanaka Qamar", "Muhammad Davin L",
+            "Muhammad Hafiidh Putra Endhira", "Muhammad Kevin Musyafa Faidzin",
+            "Muhammad Rafif FA", "Muhammad wijdan arif", "Muzdalifatus avivarla zakira",
+            "Nadia Oktavianti", "Naswa Angel Amelia", "Niken Aprillia Pratiwi",
+            "Nimatus zahro", "Pasha Ardiva", "Restu Hanggara putra",
+            "Rivaldo Adwitya Herawan", "Salma nurul nafi'ah", "Septia Ramadan",
+            "Sefira wulan febriyantiwi", "Sevillen Ananda Rianzi", "Siti faizatul nur kholifah",
+            "Triestan Hamzah Fansyuri", "Tasyalul izzah", "Widia anggun syaputri"
+        ];
+
+        // Simulated server data (in real app, this would be on actual server)
+        let attendanceData = JSON.parse(localStorage.getItem('attendanceData')) || {};
+        let todayKey = new Date().toDateString();
+
+        if (!attendanceData[todayKey]) {
+            attendanceData[todayKey] = {};
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+            renderMemberList();
+            updateRecap();
+            updateLateList();
+            
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                renderMemberList(e.target.value);
+            });
+        });
+
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('id-ID', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('currentTime').textContent = timeString;
+            document.getElementById('rekapDate').textContent = now.toLocaleDateString('id-ID', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function renderMemberList(searchTerm = '') {
+            const memberList = document.getElementById('memberList');
+            const filteredMembers = members.filter(member => 
+                member.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            memberList.innerHTML = filteredMembers.map((member, index) => {
+                const isPresent = attendanceData[todayKey][member];
+                const status = isPresent ? getAttendanceStatus(isPresent.time) : null;
+                
+                return `
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow ${isPresent ? 'bg-gray-50' : 'bg-white hover:bg-green-50'}">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <h3 class="font-medium text-gray-900 mb-1">${member}</h3>
+                                ${isPresent ? `
+                                    <div class="text-sm">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                            status === 'tepat-waktu' ? 'bg-green-100 text-green-800' : 
+                                            status === 'terlambat' ? 'bg-yellow-100 text-yellow-800' : 
+                                            'bg-red-100 text-red-800'
+                                        }">
+                                            ${status === 'tepat-waktu' ? '✅ Tepat Waktu' : 
+                                              status === 'terlambat' ? '⏰ Terlambat' : 
+                                              '❌ Tidak Absen'}
+                                        </span>
+                                        <p class="text-gray-500 mt-1">${isPresent.time}</p>
+                                    </div>
+                                ` : `
+                                    <button onclick="markAttendance('${member}')" 
+                                            class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors pulse-green">
+                                        Absen Sekarang
+                                    </button>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function markAttendance(memberName) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            
+            // Save attendance data
+            attendanceData[todayKey][memberName] = {
+                time: timeString,
+                timestamp: now.getTime()
+            };
+            
+            // Simulate server sync
+            localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
+            
+            // Show success modal
+            const status = getAttendanceStatus(timeString);
+            const statusText = status === 'tepat-waktu' ? 'Tepat Waktu! 🎉' : 
+                              status === 'terlambat' ? 'Terlambat ⏰' : 
+                              'Di luar jam absen ❌';
+            
+            document.getElementById('successMessage').textContent = 
+                ${memberName} berhasil absen pada ${timeString} - ${statusText};
+            document.getElementById('successModal').classList.remove('hidden');
+            document.getElementById('successModal').classList.add('flex');
+            
+            // Update displays
+            renderMemberList();
+            updateRecap();
+            updateLateList();
+        }
+
+        function getAttendanceStatus(timeString) {
+            const [hours, minutes] = timeString.split(':').map(Number);
+            const totalMinutes = hours * 60 + minutes;
+            
+            // 05:00 - 06:05 = tepat waktu (300-365 minutes)
+            // 06:06 - 06:30 = terlambat (366-390 minutes)
+            if (totalMinutes >= 300 && totalMinutes <= 365) {
+                return 'tepat-waktu';
+            } else if (totalMinutes >= 366 && totalMinutes <= 390) {
+                return 'terlambat';
+            } else {
+                return 'tidak-absen';
+            }
+        }
+
+        function updateRecap() {
+            const rekapTable = document.getElementById('rekapTable');
+            const todayData = attendanceData[todayKey] || {};
+            
+            let hadirCount = 0;
+            let terlambatCount = 0;
+            let tidakHadirCount = 0;
+
+            const rekapHTML = members.map((member, index) => {
+                const attendance = todayData[member];
+                let status, statusClass, statusText;
+                
+                if (attendance) {
+                    status = getAttendanceStatus(attendance.time);
+                    if (status === 'tepat-waktu') {
+                        hadirCount++;
+                        statusClass = 'bg-green-100 text-green-800';
+                        statusText = '✅ Tepat Waktu';
+                    } else if (status === 'terlambat') {
+                        terlambatCount++;
+                        statusClass = 'bg-yellow-100 text-yellow-800';
+                        statusText = '⏰ Terlambat';
+                    } else {
+                        tidakHadirCount++;
+                        statusClass = 'bg-red-100 text-red-800';
+                        statusText = '❌ Tidak Absen';
+                    }
+                } else {
+                    tidakHadirCount++;
+                    statusClass = 'bg-gray-100 text-gray-800';
+                    statusText = '➖ Belum Absen';
+                }
+
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${index + 1}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${member}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}">
+                                ${statusText}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${attendance ? attendance.time : '-'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            rekapTable.innerHTML = rekapHTML;
+            
+            // Update counters
+            document.getElementById('hadirCount').textContent = hadirCount;
+            document.getElementById('terlambatCount').textContent = terlambatCount;
+            document.getElementById('tidakHadirCount').textContent = members.length - hadirCount - terlambatCount;
+        }
+
+        function updateLateList() {
+            const terlambatList = document.getElementById('terlambatList');
+            const todayData = attendanceData[todayKey] || {};
+            
+            const lateMembers = members.filter(member => {
+                const attendance = todayData[member];
+                return attendance && getAttendanceStatus(attendance.time) === 'terlambat';
+            });
+
+            if (lateMembers.length === 0) {
+                terlambatList.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <div class="text-4xl mb-4">🎉</div>
+                        <p class="text-lg">Tidak ada anggota yang terlambat hari ini!</p>
+                    </div>
+                `;
+            } else {
+                terlambatList.innerHTML = lateMembers.map((member, index) => {
+                    const attendance = todayData[member];
+                    return `
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-medium text-gray-900">${member}</h3>
+                                    <p class="text-sm text-yellow-700">Absen pada: ${attendance.time}</p>
+                                </div>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                    ⏰ Terlambat
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('[id^="tab-"]').forEach(tab => {
+                tab.classList.remove('bg-green-500', 'text-white');
+                tab.classList.add('text-gray-500', 'hover:text-gray-700');
+            });
+            
+            // Show selected tab content
+            document.getElementById(content-${tabName}).classList.remove('hidden');
+            
+            // Add active class to selected tab
+            const activeTab = document.getElementById(tab-${tabName});
+            activeTab.classList.add('bg-green-500', 'text-white');
+            activeTab.classList.remove('text-gray-500', 'hover:text-gray-700');
+            
+            // Update data when switching tabs
+            if (tabName === 'rekap') {
+                updateRecap();
+            } else if (tabName === 'terlambat') {
+                updateLateList();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            document.getElementById('successModal').classList.remove('flex');
+        }
+
+        // Simulate real-time updates (in real app, this would be WebSocket or polling)
+        setInterval(() => {
+            // Check for updates from localStorage (simulating server sync)
+            const newData = JSON.parse(localStorage.getItem('attendanceData')) || {};
+            if (JSON.stringify(newData) !== JSON.stringify(attendanceData)) {
+                attendanceData = newData;
+                renderMemberList();
+                updateRecap();
+                updateLateList();
+            }
+        }, 2000);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98da889b96a34ad6',t:'MTc2MDMxMzM4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
